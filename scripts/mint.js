@@ -1,7 +1,7 @@
 const main = async () => {
   const nftContractFactory = await hre.ethers.getContractFactory("KeywordsNFT");
   const nftContract = await nftContractFactory.attach(
-    "0x3972D117851ABD856112523D7b784C3AC0a5Ded4" // deployed contract address
+    "0xF961Fad159FF2ABb009585d22B513B068A235846" // deployed contract address
   );
    // Call the function.
   let txn = await nftContract.mintSenderNft("BAYC");

@@ -7,7 +7,12 @@ import "@openzeppelin/contracts/utils/Strings.sol";
 
 interface KeywordsNFTInterface {
   function balanceOf(address _owner, uint _tokenId) external returns(uint);
-  function getTokensOfOwner(address _owner) view external returns (uint[] memory);
+  function getRTokensOfOwner(address _owner) view external returns (uint[] memory);
+  function getSTokensOfOwner(address _owner) view external returns (uint[] memory);
+  function idToKeyword(uint _tokenId) view external returns (string memory);
+  function mintSenderNft(string memory _keyword) external;
+  function mintReceiverNft(string memory _keyword) external;
+
 }
 
 contract KeywordsBroadcast is Ownable {
@@ -22,7 +27,7 @@ contract KeywordsBroadcast is Ownable {
   }
 
   Message[] messages;
-
+  uint public messagesLength = messages.length;
   mapping (uint => Message[]) getMsgs;
 
   KeywordsNFTInterface keywordsNFTContract;
@@ -51,7 +56,23 @@ contract KeywordsBroadcast is Ownable {
     return messages;
   }
 
-  function getTokensOfOwner(address _owner) view external returns (uint[] memory) {
-    return keywordsNFTContract.getTokensOfOwner(_owner);
+  function getRTokensOfOwner(address _owner) view external returns (uint[] memory) {
+    return keywordsNFTContract.getRTokensOfOwner(_owner);
+  }
+
+  function getSTokensOfOwner(address _owner) view external returns (uint[] memory) {
+    return keywordsNFTContract.getSTokensOfOwner(_owner);
+  }
+
+  function convertIdtoKeyword(uint _tokenId) view external returns (string memory) {
+    return keywordsNFTContract.idToKeyword(_tokenId);
+  }
+
+  function mintSenderNft(string memory _keyword) external {
+    return keywordsNFTContract.mintSenderNft(_keyword);
+  }
+
+   function mintReceiverNft(string memory _keyword) external {
+    return keywordsNFTContract.mintSenderNft(_keyword);
   }
 }
