@@ -1,8 +1,8 @@
 const main = async () => {
   await hre.run("verify:verify", {
-    address: "0xDde86AB72704ED1D13182BFA41Cef7b5850C1df4", // input deployed contract address here
-    constructorArguments: ["Keywords", "KW", ""],
-    // address: "0x0b87CB0f588C866281668e006c524734CA62f60c",
+    // address: "0xB66F66522b6Bb03fc307b4faDea91E049d94a434",
+    // constructorArguments: ["QWERTY", "Receiver", ""],
+    address: "0x3c3B0Fe25ADA3a0e6f62a38Bc479BC1201446B50",
   });
 };
 

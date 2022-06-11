@@ -1,11 +1,14 @@
 const hre = require("hardhat");
 
 const main = async () => {
-  const nftContractFactory = await hre.ethers.getContractFactory("KeywordsNFT");
-  const nftContract = await nftContractFactory.deploy("Keywords", "KW", "");
+  // const nftContractFactory = await hre.ethers.getContractFactory("ReceiverToken");
+  // const nftContract = await nftContractFactory.deploy("QWERTY", "Receiver", "");
 
-  // const nftContractFactory = await hre.ethers.getContractFactory("KeywordsBroadcast");
-  // const nftContract = await nftContractFactory.deploy();
+  // const nftContractFactory = await hre.ethers.getContractFactory("SenderToken");
+  // const nftContract = await nftContractFactory.deploy("QWERTY", "Sender", "");
+
+  const nftContractFactory = await hre.ethers.getContractFactory("Messenger");
+  const nftContract = await nftContractFactory.deploy();
 
   await nftContract.deployed();
   console.log("Contract deployed to:", nftContract.address);
