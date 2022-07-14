@@ -36,11 +36,11 @@ module.exports = {
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
-    // fantomtest: {
-    //   url: process.env.FANTOM_TESTNET_URL || "",
-    //   accounts:
-    //     process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-    // },
+    fantomtest: {
+      url: process.env.FANTOM_TESTNET_URL || "",
+      accounts:
+        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+    },
     rinkeby: {
       url: process.env.RINKEBY_URL || "",
       accounts:
@@ -49,7 +49,9 @@ module.exports = {
     ropsten: {
       url: process.env.ROPSTEN_URL || "",
       accounts:
-        process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+        process.env.PRIVATE_KEY5 !== undefined
+          ? [process.env.PRIVATE_KEY5]
+          : [],
     },
     kiln: {
       url: process.env.KILN_URL || "",
@@ -61,7 +63,7 @@ module.exports = {
     apiKey: {
       polygonMumbai: process.env.MUMBAI_API_KEY,
       // avalancheFujiTestnet: process.env.FUJI_API_KEY,
-      // ftmTestnet: "",
+      ftmTestnet: process.env.FANTOM_TESTNET_API_KEY,
       ropsten: process.env.ROPSTEN_API_KEY,
       rinkeby: process.env.RINKEBY_API_KEY,
       // cronostest: process.env.CRONOSTEST_API_KEY

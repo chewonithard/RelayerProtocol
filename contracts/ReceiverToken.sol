@@ -1,34 +1,32 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.1;
 
-import "hardhat/console.sol";
-import "@openzeppelin/contracts/token/ERC1155/IERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
 
 /**
- * @title Keywords
- * @author Keywords Team
+ * @title Receiver Token
+ * @author Relayer Team
  *
- * ERC1155 contract for Keywords NFTs.
+ * ERC1155 contract for Receiver NFTs.
 */
 
 contract ReceiverToken is ERC1155, Ownable {
   /* ========== STATE VARIABLES ========== */
-  // Contract for KeywordsSender NFT minter
-  address public SenderContract;
-
-  // NFT name
+    // NFT name
   string public name;
 
   // NFT symbol
   string public symbol;
 
+  /* ========== INTERFACES ========== */
+  // Contract for Relayer NFT minter
+  address public RelayerContract;
+
   /* ========== MODIFIERS ========== */
-  modifier onlySenderContract {
-      require((msg.sender == SenderContract), "caller is not SenderContract");
+  modifier onlyRelayerContract {
+      require((msg.sender == RelayerContract), "caller is not RelayerContract");
       _;
   }
 
@@ -39,7 +37,6 @@ contract ReceiverToken is ERC1155, Ownable {
   event ReceiverBurn(address indexed from,  uint tokenId, uint amount, uint timestamp);
   event ReceiverTransfer(address indexed from, address to, uint id, uint amount, uint timestamp);
   event ReceiverBatchTransfer(address indexed from, address to, uint256[] ids, uint256[] amounts, uint timestamp);
-  event SenderContractChange(address indexed from, address to);
 
   /* ========== EXTERNAL MAPPINGS ========== */
   // Mapping from token ID to token supply
@@ -53,7 +50,7 @@ contract ReceiverToken is ERC1155, Ownable {
 
   /* ========== CONSTANTS ========== */
 
-  string receiverSvg = "<svg xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='xMinYMin meet' viewBox='0 0 350 350'><style>.base { fill: white; font-family: serif; font-size: 24px; }</style><rect width='100%' height='100%' fill='black' /><text x='50%' y='50%' class='base' dominant-baseline='middle' text-anchor='middle'>";
+  string receiverSvg = "<svg xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='xMinYMin meet' viewBox='0 0 350 350'><style>.base { fill: white; font-family: monospace; font-size: 24px; }</style><rect width='100%' height='100%' fill='black' /><text x='50%' y='50%' class='base' dominant-baseline='middle' text-anchor='middle'>";
 
   /* ========== CONSTRUCTOR ========== */
   constructor(string memory _name, string memory _symbol, string memory _uri) ERC1155(_uri) {name = _name; symbol = _symbol;}
@@ -65,6 +62,16 @@ contract ReceiverToken is ERC1155, Ownable {
 
     _mint(msg.sender, tokenId, amount, new bytes(0));
     emit ReceiverMint(msg.sender, tokenId, amount, block.timestamp);
+
+    tokenSupply[tokenId] = tokenSupply[tokenId] + amount;
+  }
+
+  // cross chain mint function; needs to specify mint to which address as it comes from LayerZero contract
+  function relayedMintReceiver(address to, uint tokenId, uint amount) external {
+    require(_exists[tokenId], "token does not exist, mint sender token first");
+
+    _mint(to, tokenId, amount, new bytes(0));
+    emit ReceiverMint(to, tokenId, amount, block.timestamp);
 
     tokenSupply[tokenId] = tokenSupply[tokenId] + amount;
   }
@@ -90,7 +97,7 @@ contract ReceiverToken is ERC1155, Ownable {
   }
 
   function burn(address from, uint tokenId, uint amount) external {
-    require((msg.sender == from), "must be owner of token");
+    require((msg.sender == from || msg.sender == owner()), "must be owner of token");
     require((tokenSupply[tokenId] - amount >= 1), "cannot burn last remaining token");
 
     _burn(from, tokenId, amount);
@@ -100,9 +107,6 @@ contract ReceiverToken is ERC1155, Ownable {
   }
 
   /* ========== VIEW FUNCTIONS ========== */
-  function uri(uint256 tokenId) override public view returns (string memory){
-        return(getUri[tokenId]);
-  }
 
   /* ========== INTERNAL FUNCTIONS ========== */
 
@@ -143,13 +147,11 @@ contract ReceiverToken is ERC1155, Ownable {
   /* ========== RESTRICTED  FUNCTIONS ========== */
 
   // called only by sender contract when minting a fresh sender token
-  function initialMintReceiver(address to, uint tokenId, uint amount, string memory _keyword) external onlySenderContract {
-    require((bytes(_keyword).length > 0), "length too short");
-
+  function initialMintReceiver(address to, uint tokenId, uint amount, string memory _keyword) external onlyRelayerContract {
     // Get all the JSON metadata in place and base64 encode it
     string memory tokenUri = _encodeUri(_keyword, receiverSvg);
 
-    _mint(to, tokenId, 1, new bytes(0));
+    _mint(to, tokenId, amount, new bytes(0));
     _setTokenURI(tokenId, tokenUri);
 
     tokenSupply[tokenId] = tokenSupply[tokenId] + amount;
@@ -158,11 +160,8 @@ contract ReceiverToken is ERC1155, Ownable {
     emit ReceiverInitialMint(msg.sender, to, tokenId, amount, block.timestamp, _keyword);
   }
 
-  function setSenderContractAddress(address _contract) external onlyOwner {
-    address old = SenderContract;
-    SenderContract = _contract;
-
-    emit SenderContractChange(old, SenderContract);
+  function setRelayerContractAddress(address _contract) external onlyOwner {
+    RelayerContract = _contract;
   }
 
    // soulbound nft implementation with only owner allowed to transfer to faciliate initial airdrop of nfts

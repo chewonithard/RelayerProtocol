@@ -1,8 +1,10 @@
 const main = async () => {
   await hre.run("verify:verify", {
-    // address: "0x8304b1cE2bF7fB0958f641aDA015A16Bfe92e485",
-    // constructorArguments: ["Relayer", "REL", ""],
-    address: "0xfba3D37e82d19a583125aa15e251a2eb1d7B84d5",
+    address: "0x6BD5e8C7F62ab73e0b37f9B8e238a2eab21edAEC",
+    constructorArguments: [
+      "0x79a63d6d8BBD5c6dfc774dA79bCcD948EAcb53FA",
+    ],
+    // address: "0xfba3D37e82d19a583125aa15e251a2eb1d7B84d5",
   });
 };
 
