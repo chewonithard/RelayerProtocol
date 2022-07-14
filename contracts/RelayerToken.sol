@@ -68,9 +68,7 @@ contract RelayerToken is ERC1155, Ownable {
 
   /* ========== CONSTANTS ========== */
 
-  string senderSvgSmall = "<svg xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='xMinYMin meet' viewBox='0 0 350 350'><style>.base { fill: black; font-family: monospace; font-size: 24px; }</style><rect width='100%' height='100%' fill='none' /><rect width='40%' height='12%' x='30%' y='43.5%' fill='none' stroke='black' stroke-width='0.5%' rx='20px' ry='20px' stroke-linejoin='round' /><text x='56%' y='50%' class='base' dominant-baseline='middle' text-anchor='middle'>";
-
-  string senderSvgBig = "<svg xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='xMinYMin meet' viewBox='0 0 350 350'><style>.base { fill: black; font-family: monospace; font-size: 22px; }</style><rect width='100%' height='100%' fill='gold' /><rect width='80%' height='12%' x='10%' y='43.5%' fill='none' stroke='black' stroke-width='0.5%' rx='20px' ry='20px' stroke-linejoin='round' /><text x='50%' y='50%' class='base' dominant-baseline='middle' text-anchor='middle'>";
+  string senderSvg = "<svg xmlns='http://www.w3.org/2000/svg' preserveAspectRatio='xMinYMin meet' viewBox='0 0 350 350'><style>.base { fill: white; font-family: monospace; font-size: 24px; }</style><rect width='100%' height='100%' fill='gold' /><text x='50%' y='50%' class='base' dominant-baseline='middle' text-anchor='middle'>";
 
   /* ========== CONSTRUCTOR ========== */
   constructor(string memory _name, string memory _symbol, string memory _uri) ERC1155(_uri) {name = _name; symbol = _symbol;}
@@ -89,18 +87,6 @@ contract RelayerToken is ERC1155, Ownable {
 
     // checks that external contract owner is msg.sender
     require(externalContract.owner() == msg.sender);
-
-    // require keyword to be of correct length
-    require((bytes(_keyword).length > 0) && (bytes(_keyword).length < 21), "keyword length must be > 0 and < 21");
-
-    // decide small or big svg based on length of keyword
-    string memory senderSvg;
-
-    if(bytes(_keyword).length < 11) {
-     senderSvg = senderSvgSmall;
-    } else {
-     senderSvg = senderSvgBig;
-    }
 
     // mint for relayer token and trigger minting of receiver tokens, set URI
     string memory tokenUri = _encodeUri(_keyword, senderSvg);
@@ -219,15 +205,6 @@ contract RelayerToken is ERC1155, Ownable {
     uint _tokenId = _getTokenId((_keyword));
 
     externalContract = IExternalContract(_contract);
-
-    // decide small or big svg based on length of keyword
-    string memory senderSvg;
-
-    if(bytes(_keyword).length < 11) {
-     senderSvg = senderSvgSmall;
-    } else {
-     senderSvg = senderSvgBig;
-    }
 
     // mint for relayer token and trigger minting of receiver tokens, set URI
     string memory tokenUri = _encodeUri(_keyword, senderSvg);

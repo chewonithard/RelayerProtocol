@@ -1,7 +1,7 @@
 const main = async () => {
   const nftContractFactory = await hre.ethers.getContractFactory("Messenger");
   const nftContract = await nftContractFactory.attach(
-    "0xEFdbDFd88A50B72F94DFCCC4f267B7Ae767aF195" // deployed messenger contract address
+    "0x51be187A2164eF85cd03e5EB242C3E05D51941EB" // deployed messenger contract address
   );
 
   // send message

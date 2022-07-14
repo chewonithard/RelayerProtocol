@@ -1,16 +1,16 @@
 const main = async () => {
-  const nftContractFactory = await hre.ethers.getContractFactory("RelayMessenger");
+  const nftContractFactory = await hre.ethers.getContractFactory("RelayReplyMessage");
   const nftContract = await nftContractFactory.attach(
-    // "0xD0999eCb9e09a8f6dfCBDDfD9Ad9B396B5B9F2C5" // rinkeby
-    "0xe947f4d50e904D06E112FaCc668e476A7c1e96E3" // ftm
+    "0x44B3Bc7923680dC922F6918A2eAa0F95C9f76EDa" // rinkeby
+    // "0x2b7B803a6B78054656CeDbbd05C746959fd8CF63" // ftm
   );
 
   // set receiver contract address
   let txn = await nftContract.setTrustedRemote(
-    // 10012,
-    // "0xe947f4d50e904D06E112FaCc668e476A7c1e96E3" // ftm contract
-    10001,
-    "0xD0999eCb9e09a8f6dfCBDDfD9Ad9B396B5B9F2C5" // rinkeby contract
+    10012,
+    "0x2b7B803a6B78054656CeDbbd05C746959fd8CF63" // ftm contract
+    // 10001,
+    // "0x44B3Bc7923680dC922F6918A2eAa0F95C9f76EDa" // rinkeby contract
   );
   await txn.wait();
   console.log("Set trusted remote!");

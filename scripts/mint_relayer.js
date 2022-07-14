@@ -1,7 +1,7 @@
 const main = async () => {
   const nftContractFactory = await hre.ethers.getContractFactory("RelayerToken");
   const nftContract = await nftContractFactory.attach(
-    "0x6D81652Ff9D3a39a99ba3db1D094D2233D31979e" // deployed contract address
+    "0x5EA8e12c2d7f180bC68738674f49A3345e73E5bA" // deployed contract address
   );
 
   // set receiver contract address

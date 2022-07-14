@@ -1,19 +1,19 @@
 const main = async () => {
-  const contractFactory = await hre.ethers.getContractFactory("RelayReceiverMint");
+  const contractFactory = await hre.ethers.getContractFactory("RelayReplyMessage");
   const contract = await contractFactory.attach(
-    "0xe7CDaE67b2838CdF761a0cbae027C02ea34Caa2f" // ftm
+    "0x2b7B803a6B78054656CeDbbd05C746959fd8CF63" // ftm
   );
 
   const dstChainId = 10001
-  const dstAddr = "0x522436c730e3c15a2FF27ea84D811fF624618Dd3"; // rinkeby
+  const dstAddr = "0x44B3Bc7923680dC922F6918A2eAa0F95C9f76EDa";
 
   let tx = await (
-    await contract.relayReceiverMint(
+    await contract.relayReply(
       dstChainId,
       dstAddr,
-      16014359, // tokenId
-      2, // amount
-      { value: ethers.utils.parseEther("15") }
+      "160143-messageId-test-2222", // messageId
+      "Testing relay reply contract v2", // message
+      { value: ethers.utils.parseEther("20") }
     )
   ).wait();
   console.log(`...tx: ${tx.transactionHash}`);

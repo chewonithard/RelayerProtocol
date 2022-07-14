@@ -15,8 +15,8 @@ contract Messenger is Ownable {
 
   event NewMessage(address indexed from, uint tokenId, uint timestamp, string message);
   event NewRelayedMessage(address indexed from, uint srcChainId, uint tokenId, uint timestamp, string message);
-  event NewReply(address indexed from, uint messageId, uint timestamp, string message);
-  event NewRelayedReply(address indexed from, uint srcChainId, uint messageId, uint timestamp, string message);
+  event NewReply(address indexed from, string messageId, uint timestamp, string message);
+  event NewRelayedReply(address indexed from, uint srcChainId, string messageId, uint timestamp, string message);
 
   // uint replyMessagePrice = 1000000000000000; // 0.001 eth
   uint replyMessagePrice = 0; // free just pay gas
@@ -43,14 +43,14 @@ contract Messenger is Ownable {
   }
 
   // sending a reply from base chain
-  function replyMessage(uint _messageId, string calldata _content) public payable {
+  function replyMessage(string memory _messageId, string calldata _content) public payable {
     require ((msg.value >= replyMessagePrice), "not enought eth sent");
 
     emit NewReply(msg.sender, _messageId, block.timestamp, _content);
   }
 
   // sending a reply from another chain/network
-  function sendRelayedReply(address _from, uint _srcChainId, uint _messageId, string calldata _content) public payable {
+  function sendRelayedReply(address _from, uint _srcChainId, string memory _messageId, string calldata _content) public payable {
     require ((msg.value >= replyMessagePrice), "not enought eth sent");
 
     emit NewRelayedReply(_from, _srcChainId, _messageId, block.timestamp, _content);

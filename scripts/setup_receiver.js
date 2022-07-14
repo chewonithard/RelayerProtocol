@@ -6,7 +6,7 @@ const main = async () => {
 
   // set relayer contract address
   let txn = await nftContract.setRelayerContractAddress(
-    "0x6D81652Ff9D3a39a99ba3db1D094D2233D31979e"
+    "0x5EA8e12c2d7f180bC68738674f49A3345e73E5bA"
   );
   await txn.wait();
   console.log("Set relayer contract address!");

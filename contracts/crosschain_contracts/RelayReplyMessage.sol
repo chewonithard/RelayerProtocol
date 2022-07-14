@@ -6,13 +6,13 @@ import "@openzeppelin/contracts/security/Pausable.sol";
 import "../../lzApp/NonblockingLzApp.sol";
 
 interface IMessenger {
-  function sendRelayedReply(address _from, uint _srcChainId, uint _messageId, string calldata _content) external;
+  function sendRelayedReply(address _from, uint _srcChainId, string memory _messageId, string calldata _content) external;
  }
 
 contract RelayReplyMessage is NonblockingLzApp, Pausable {
 
-  event RelayReply(address from, uint messageId, uint timestamp, string content);
-  event ReceivedReply(address from, uint messageId, uint timestamp, string content);
+  event RelayReply(address from, string messageId, uint timestamp, string content);
+  event ReceivedReply(address from, string messageId, uint timestamp, string content);
 
   // constructor requires the LayerZero endpoint for this chain
   constructor(address _endpoint) NonblockingLzApp(_endpoint) {}
@@ -22,7 +22,7 @@ contract RelayReplyMessage is NonblockingLzApp, Pausable {
   function relayReply(
       uint16 _dstChainId, // see constants chainids.json
       address _dstPingAddr, // destination address of Crosschain contract
-      uint _messageId, // target message
+      string memory _messageId, // target message
       string memory _content // reply content
   ) public payable {
       require(this.isTrustedRemote(_dstChainId, abi.encodePacked(_dstPingAddr)), "you must allow inbound messages to ALL contracts with setTrustedRemote()");
@@ -66,9 +66,8 @@ contract RelayReplyMessage is NonblockingLzApp, Pausable {
       uint srcChainId = _srcChainId;
 
       // decode the relayed message sent thus far
-      (address _from, uint _messageId, string memory _content) = abi.decode(_payload, (address, uint, string));
+      (address _from, string memory _messageId, string memory _content) = abi.decode(_payload, (address, string, string));
 
-      // emit ReceivedMessage(_from, _messageId, block.timestamp, _content);
       emit ReceivedReply(_from, _messageId, block.timestamp, _content);
 
       // send relayed reply

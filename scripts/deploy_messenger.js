@@ -8,7 +8,7 @@ const main = async () => {
   console.log("Contract deployed to:", Contract.address);
 
   await Contract.setRelayerContractAddress(
-    "0x6D81652Ff9D3a39a99ba3db1D094D2233D31979e"
+    "0x5EA8e12c2d7f180bC68738674f49A3345e73E5bA"
   );
   console.log("RelayerContract set!");
 
