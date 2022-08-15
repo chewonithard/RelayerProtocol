@@ -2,7 +2,7 @@ const hre = require("hardhat");
 
 const main = async () => {
   const nftContractFactory = await hre.ethers.getContractFactory("ReceiverToken");
-  const nftContract = await nftContractFactory.deploy("Relayer", "REL", "");
+  const nftContract = await nftContractFactory.deploy("Relayer-Receiver", "REL-Receiver", "");
 
   await nftContract.deployed();
   console.log("Contract deployed to:", nftContract.address);

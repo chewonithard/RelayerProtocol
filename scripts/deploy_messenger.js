@@ -8,12 +8,12 @@ const main = async () => {
   console.log("Contract deployed to:", Contract.address);
 
   await Contract.setRelayerContractAddress(
-    "0x5EA8e12c2d7f180bC68738674f49A3345e73E5bA"
+    "0xb2712cd93EF39e5696ae8ba581c3D1992e6E7f8a"
   );
   console.log("RelayerContract set!");
 
   await Contract.setReceiverContractAddress(
-    "0x8304b1cE2bF7fB0958f641aDA015A16Bfe92e485"
+    "0x26B37edC44c4d5003c5f286baAaaE67e5a91d1bB"
   );
   console.log("ReceiverContract set!");
 };

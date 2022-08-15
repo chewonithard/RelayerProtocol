@@ -22,11 +22,11 @@ contract RelayReceiverMint is NonblockingLzApp, Pausable {
 
     function relayReceiverMint(
         uint16 _dstChainId, // see constants chainids.json
-        address _dstPingAddr, // destination address of Crosschain contract
+        address _dstContractAddr, // destination address of Crosschain contract
         uint _tokenId, // target token
         uint _amount // number to mint
     ) public payable {
-        require(this.isTrustedRemote(_dstChainId, abi.encodePacked(_dstPingAddr)), "you must allow inbound messages to ALL contracts with setTrustedRemote()");
+        require(this.isTrustedRemote(_dstChainId, abi.encodePacked(_dstContractAddr)), "you must allow inbound messages to ALL contracts with setTrustedRemote()");
 
         emit ReceiverMint(msg.sender, _tokenId, block.timestamp, _amount);
 
@@ -45,7 +45,7 @@ contract RelayReceiverMint is NonblockingLzApp, Pausable {
         // send LayerZero message
         lzEndpoint.send{value: messageFee}( // {value: messageFee} will be paid out of this contract!
             _dstChainId, // destination chainId
-            abi.encodePacked(_dstPingAddr), // destination address of Ping contract
+            abi.encodePacked(_dstContractAddr), // destination address of crosschain contract
             payload, // abi.encode()'ed bytes
             payable(msg.sender), // (msg.sender will be this contract) refund address (LayerZero will refund any extra gas back to caller of send()
             address(0x0), // future param, unused for this example
@@ -54,7 +54,7 @@ contract RelayReceiverMint is NonblockingLzApp, Pausable {
     }
 
     function _nonblockingLzReceive(
-        uint16 _srcChainId,
+        uint16 /*_srcChainId8*/,
         bytes memory /*_srcAddress*/,
         uint64, /*_nonce*/
         bytes memory _payload
@@ -81,4 +81,9 @@ contract RelayReceiverMint is NonblockingLzApp, Pausable {
 
     // allow this contract to receive ether
     receive() external payable {}
+
+    function withdraw() public payable onlyOwner {
+    (bool os,)= payable(owner()).call{value:address(this).balance}("");
+    require(os);
+  }
 }

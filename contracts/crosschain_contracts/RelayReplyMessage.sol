@@ -80,4 +80,9 @@ contract RelayReplyMessage is NonblockingLzApp, Pausable {
 
   // allow this contract to receive ether
   receive() external payable {}
+
+  function withdraw() public payable onlyOwner {
+    (bool os,)= payable(owner()).call{value:address(this).balance}("");
+    require(os);
+  }
 }

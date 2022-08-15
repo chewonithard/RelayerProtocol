@@ -4,13 +4,8 @@ pragma solidity ^0.8.1;
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/utils/Base64.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
-/**
- * @title Relayer
- * @author Relayer Team
- *
- * ERC1155 contract for Relayer NFT Minter.
-*/
 
 interface IReceiverToken {
   function initialMintReceiver(address to, uint tokenId, uint amount, string memory _keyword) external;
@@ -32,16 +27,14 @@ contract RelayerToken is ERC1155, Ownable {
   IReceiverToken receiverContract;
   IExternalContract externalContract;
 
-  /* ========== MODIFIERS ========== */
-
-
   /* ========== EVENTS ========== */
   event RelayerInitialMint(address indexed to, uint tokenId, uint amount, string keyword, address _contract, uint timestamp);
   event RelayerMint(address indexed to, uint tokenId, uint amount, uint timestamp);
   event RelayerBurn(address indexed from,  uint tokenId, uint amount, uint timestamp);
   event UpdateTokenOwner(uint indexed tokenId, address newOwner);
-  event UpdateTokenProfilePic(uint indexed tokenId, string profilePic);
-  event UpdateTokenLink(uint indexed tokenId, string officialLink);
+  event UpdateTokenAvatar(uint indexed tokenId, string avatar);
+  event UpdateTokenUrl(uint indexed tokenId, string url);
+  event UpdateTokenDescription(uint indexed tokenId, string desc);
   event RelayerTransfer(address indexed from, address to, uint id, uint amount, uint timestamp);
   event RelayerBatchTransfer(address indexed from, address to, uint256[] ids, uint256[] amounts, uint timestamp);
 
@@ -50,9 +43,10 @@ contract RelayerToken is ERC1155, Ownable {
     uint _supply;
     string _keyword;
     address _contract;
-    address _verifiedOwner;
-    string _profilePic;
-    string _officialLink;
+    address _owner;
+    string _avatar;
+    string _url;
+    string _description;
   }
 
   /* ========== EXTERNAL MAPPINGS ========== */
@@ -75,7 +69,34 @@ contract RelayerToken is ERC1155, Ownable {
 
   /* ========== MUTATIVE FUNCTIONS ========== */
 
+  // mint function for individuals
+  function individualInitialMint() external {
+
+    string memory addr = Strings.toHexString(uint256(uint160(msg.sender)), 20);
+    // hash address into unique token Id
+    uint _tokenId = _getTokenId(addr);
+
+    // require keyword not to exist, i.e. it is initial mint
+    require (!exists[_tokenId]);
+
+    // mint for relayer token and trigger minting of receiver tokens, set URI
+    string memory tokenUri = _encodeUri(addr, senderSvg);
+    _mint(msg.sender, _tokenId, 1, new bytes(0)); // amount set to 1 as individual not expected to require more
+    _setTokenURI(_tokenId, tokenUri);
+
+    // mint receiver token with identical token id and keyword
+    receiverContract.initialMintReceiver(msg.sender, _tokenId, 1, addr);
+
+    // administrative stuff
+    exists[_tokenId] = true;
+    tokens[_tokenId] = Token(1, addr, msg.sender, msg.sender, "", "", "");
+
+    emit RelayerInitialMint(msg.sender, _tokenId, 1, addr, msg.sender, block.timestamp);
+  }
+
+  // mint function for projects/DAOs/communities
   function initialMint(address _contract, string memory _keyword, uint _amount) external {
+
     // interface with external contract for verification
     externalContract = IExternalContract(_contract);
 
@@ -98,14 +119,16 @@ contract RelayerToken is ERC1155, Ownable {
 
     // administrative stuff
     exists[_tokenId] = true;
-    tokens[_tokenId] = Token(_amount, _keyword, _contract, msg.sender, "", "");
+    tokens[_tokenId] = Token(_amount, _keyword, _contract, msg.sender, "", "", "");
 
     emit RelayerInitialMint(msg.sender, _tokenId, _amount, _keyword, _contract, block.timestamp);
   }
 
-  function mintRelayer(uint _tokenId, uint _amount) external {
+  // post-initial mint, this function allows more relayer tokens to be minted by the owner
+  function mintMoreRelayer(uint _tokenId, uint _amount) external {
+
     // only verified owner can mint more tokens
-    require(tokens[_tokenId]._verifiedOwner == msg.sender);
+    require(tokens[_tokenId]._owner == msg.sender);
 
     _mint(msg.sender, _tokenId, _amount, new bytes(0));
     tokens[_tokenId]._supply = tokens[_tokenId]._supply + _amount;
@@ -114,7 +137,7 @@ contract RelayerToken is ERC1155, Ownable {
   }
 
   function burn(address _from, uint _tokenId, uint _amount) external {
-    require((msg.sender == _from || tokens[_tokenId]._verifiedOwner == msg.sender || msg.sender == owner()), "must be owner of token or verified owner (aka deployer address), or is contract owner");
+    require((msg.sender == _from || tokens[_tokenId]._owner == msg.sender || msg.sender == owner()), "must be owner"); // must be holder of token or relayer token owner, or relayer contract owner
 
     _burn(_from, _tokenId, _amount);
     tokens[_tokenId]._supply = tokens[_tokenId]._supply - _amount;
@@ -128,27 +151,37 @@ contract RelayerToken is ERC1155, Ownable {
   }
 
   function updateTokenOwner(uint _tokenId, address _newOwner) external {
-    require (tokens[_tokenId]._verifiedOwner == msg.sender || msg.sender == owner(), "must be verified owner of token or contract owner");
+    require (tokens[_tokenId]._owner == msg.sender || msg.sender == owner(), "must be owner"); //must be relayer token owner or relayer contract owner
 
-    tokens[_tokenId]._verifiedOwner = _newOwner;
+    tokens[_tokenId]._owner = _newOwner;
 
     emit UpdateTokenOwner(_tokenId, _newOwner);
   }
 
-  function updateTokenProfilePic(uint _tokenId, string memory _profilePic) external {
-    require (tokens[_tokenId]._verifiedOwner == msg.sender || msg.sender == owner(), "must be verified owner of token or contract owner");
+  function updateTokenAvatar(uint _tokenId, string memory _avatar) external {
+    require (tokens[_tokenId]._owner == msg.sender || msg.sender == owner(), "must be owner"); //must be relayer token owner or relayer contract owner
 
-    tokens[_tokenId]._profilePic = _profilePic;
+    tokens[_tokenId]._avatar = _avatar;
 
-    emit UpdateTokenProfilePic(_tokenId, _profilePic);
+    emit UpdateTokenAvatar(_tokenId, _avatar);
   }
 
-  function updateTokenLink(uint _tokenId, string memory _officialLink) external {
-    require (tokens[_tokenId]._verifiedOwner == msg.sender || msg.sender == owner(), "must be verified owner of token or contract owner");
+  function updateTokenUrl(uint _tokenId, string memory _url) external {
+    require (tokens[_tokenId]._owner == msg.sender || msg.sender == owner(), "must be owner"); //must be relayer token owner or relayer contract owner
+    require (bytes(_url).length < 100);
 
-    tokens[_tokenId]._officialLink = _officialLink;
+    tokens[_tokenId]._url = _url;
 
-    emit UpdateTokenLink(_tokenId, _officialLink);
+    emit UpdateTokenUrl(_tokenId, _url);
+  }
+
+  function updateTokenDescription(uint _tokenId, string memory _desc) external {
+    require (tokens[_tokenId]._owner == msg.sender || msg.sender == owner(), "must be owner"); //must be relayer token owner or relayer contract owner
+    require (bytes(_desc).length < 160);
+
+    tokens[_tokenId]._description = _desc;
+
+    emit UpdateTokenDescription(_tokenId, _desc);
   }
 
   /* ========== VIEW FUNCTIONS ========== */
@@ -172,7 +205,7 @@ contract RelayerToken is ERC1155, Ownable {
                     // We set the title of our NFT as the generated word along with the role in brackets
                     '{"keyword": "',
                     _keyword,
-                    '", "description": "Relayer tokens for projects, DAOs and communities", "image": "data:image/svg+xml;base64,',
+                    '", "description": "Relayer-Sender tokens for projects, DAOs and communities", "image": "data:image/svg+xml;base64,',
                     // We add data:image/svg+xml;base64 and then append our base64 encode our svg
                     Base64.encode(bytes(finalSvg)),
                     '", "attributes": [{"trait_type":"Role", "value":"Sender"}, {"trait_type":"Background", "value":"', backgroundColor,'"}]}'
@@ -198,35 +231,6 @@ contract RelayerToken is ERC1155, Ownable {
   }
 
   /* ========== RESTRICTED  FUNCTIONS ========== */
-
-  // owner mint function to faciliate airdrops to other projects
-  function ownerInitialMint(address _contract, string memory _keyword, uint _amount) external onlyOwner {
-    // hash keyword into unique token Id
-    uint _tokenId = _getTokenId((_keyword));
-
-    externalContract = IExternalContract(_contract);
-
-    // mint for relayer token and trigger minting of receiver tokens, set URI
-    string memory tokenUri = _encodeUri(_keyword, senderSvg);
-    _mint(msg.sender, _tokenId, _amount, new bytes(0));
-    _setTokenURI(_tokenId, tokenUri);
-
-    // mint receiver token with identical token id and keyword
-    receiverContract.initialMintReceiver(msg.sender, _tokenId, _amount, _keyword);
-
-    // administrative stuff
-    exists[_tokenId] = true;
-    tokens[_tokenId] = Token(_amount, _keyword, _contract, msg.sender, "", "");
-
-    emit RelayerInitialMint(msg.sender, _tokenId, _amount, _keyword, _contract, block.timestamp);
-  }
-
-  function ownerMint(uint _tokenId, uint _amount) external onlyOwner {
-    _mint(msg.sender, _tokenId, _amount, new bytes(0));
-    tokens[_tokenId]._supply = tokens[_tokenId]._supply + _amount;
-
-    emit RelayerMint(msg.sender, _tokenId, _amount, block.timestamp);
-  }
 
   // set address of receiver contract
   function setReceiverContractAddress(address _address) external onlyOwner {

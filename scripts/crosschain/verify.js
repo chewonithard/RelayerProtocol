@@ -1,7 +1,7 @@
 const main = async () => {
   await hre.run("verify:verify", {
-    address: "0x44B3Bc7923680dC922F6918A2eAa0F95C9f76EDa",
-    constructorArguments: ["0x79a63d6d8BBD5c6dfc774dA79bCcD948EAcb53FA"],
+    address: "0x9eD2D05d46685b546efFEb71B3425f3bC52CF53C",
+    constructorArguments: ["0x93f54D755A063cE7bB9e6Ac47Eccc8e33411d706"],
     // address: "0xfba3D37e82d19a583125aa15e251a2eb1d7B84d5",
   });
 };

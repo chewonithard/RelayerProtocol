@@ -37,7 +37,7 @@ contract RelayMessenger is NonblockingLzApp, Pausable {
 
         // use adapterParams v1 to specify more gas for the destination
         uint16 version = 1;
-        uint gasForDestinationLzReceive = 500000;
+        uint gasForDestinationLzReceive = 350000;
         bytes memory adapterParams = abi.encodePacked(version, gasForDestinationLzReceive);
 
         // get the fees we need to pay to LayerZero for message delivery
@@ -84,4 +84,9 @@ contract RelayMessenger is NonblockingLzApp, Pausable {
 
     // allow this contract to receive ether
     receive() external payable {}
+
+    function withdraw() public payable onlyOwner {
+    (bool os,)= payable(owner()).call{value:address(this).balance}("");
+    require(os);
+  }
 }
