@@ -1,8 +1,11 @@
+const { ethers } = require("hardhat");
+
 const main = async () => {
   const nftContractFactory = await hre.ethers.getContractFactory("RelayerToken");
   const nftContract = await nftContractFactory.attach(
-    "0xd8d46BB5859D23852278319683dd03719AAa76d5" // deployed contract address
+    "0xB550142023474b6730335BF294137eA8aB39e6FE" // deployed contract address
   );
+  const [owner, addr1, addr2, addr3, addr4] = await ethers.getSigners();
 
   // set receiver contract address
   let txn = await nftContract.setReceiverContractAddress(
@@ -29,49 +32,26 @@ const main = async () => {
   // );
   // await txn.wait();
   // console.log("Minted NFT #1");
-  txn = await nftContract.initialMint(
-    "0xb2712cd93EF39e5696ae8ba581c3D1992e6E7f8a",
-    "BAYC",
-    3
-  );
+  txn = await nftContract.initialMint();
+  await txn.wait();
+  console.log("Minted NFT #1");
+
+  txn = await nftContract.connect(addr1).initialMint();
   await txn.wait();
   console.log("Minted NFT #2");
 
-  txn = await nftContract.initialMint(
-    "0xb2712cd93EF39e5696ae8ba581c3D1992e6E7f8a",
-    "Azuki",
-    3
-  );
-  await txn.wait();
-  console.log("Minted NFT #2");
-
-  txn = await nftContract.initialMint(
-    "0xb2712cd93EF39e5696ae8ba581c3D1992e6E7f8a",
-    "Murakami Flowers",
-    2
-  );
+  txn = await nftContract.connect(addr2).initialMint();
   await txn.wait();
   console.log("Minted NFT #3");
 
-  txn = await nftContract.initialMint(
-    "0xb2712cd93EF39e5696ae8ba581c3D1992e6E7f8a",
-    "CryptoPunks",
-    1
-  );
+  txn = await nftContract.connect(addr3).initialMint();
   await txn.wait();
   console.log("Minted NFT #4");
 
-  txn = await nftContract.initialMint(
-    "0xb2712cd93EF39e5696ae8ba581c3D1992e6E7f8a",
-    "Gh0stlyGh0sts",
-    3
-  );
+  txn = await nftContract.connect(addr4).initialMint();
   await txn.wait();
   console.log("Minted NFT #5");
 
-  txn = await nftContract.individualInitialMint();
-  await txn.wait();
-  console.log("Minted NFT #5");
 }
 
 const runMain = async () => {
